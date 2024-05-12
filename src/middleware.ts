@@ -1,4 +1,4 @@
-import { authMiddleware, redirectToSignIn } from '@clerk/nextjs';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { type NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
@@ -10,26 +10,17 @@ const intlMiddleware = createMiddleware({
   defaultLocale: AppConfig.defaultLocale,
 });
 
-export default authMiddleware({
-  publicRoutes: (req: NextRequest) =>
-    !req.nextUrl.pathname.includes('/dashboard') &&
-    !req.nextUrl.pathname.includes('/onboarding'),
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/onboarding(.*)',
+]);
 
-  beforeAuth: (req) => {
-    // Execute next-intl middleware before Clerk's auth middleware
-    return intlMiddleware(req);
-  },
-
-  // eslint-disable-next-line consistent-return
-  afterAuth(auth, req) {
-    // Handle users who aren't authenticated
-    if (!auth.userId && !auth.isPublicRoute) {
-      return redirectToSignIn({ returnBackUrl: req.url });
-    }
-
+export default clerkMiddleware(
+  (auth, req: NextRequest) => {
+    if (isProtectedRoute(req)) auth().protect();
     if (
-      auth.userId &&
-      !auth.orgId &&
+      auth().userId &&
+      !auth().orgId &&
       !req.nextUrl.pathname.endsWith('/onboarding/organization-selection')
     ) {
       const organizationSelection = new URL(
@@ -39,8 +30,12 @@ export default authMiddleware({
 
       return NextResponse.redirect(organizationSelection);
     }
+    return intlMiddleware(req);
   },
-});
+  {
+    debug: process.env.NODE_ENV === 'development',
+  },
+);
 
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],

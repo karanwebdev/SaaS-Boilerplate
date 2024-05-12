@@ -4,10 +4,10 @@
   "scripts": {
     "dev:spotlight": "spotlight-sidecar",
     "dev:next": "next dev",
-    "dev": "run-p dev:*",
-    "build": "npm run db:migrate && next build",
+    "dev": "pnpm run --parallel /^dev:/",
+    "build": "pnpm run db:migrate && next build",
     "start": "next start",
-    "build-stats": "cross-env ANALYZE=true npm run build",
+    "build-stats": "cross-env ANALYZE=true pnpm run build",
     "clean": "rimraf .next .swc out coverage",
     "lint": "next lint",
     "format": "next lint --fix && prettier '**/*.{json,yaml}' --write --ignore-path .gitignore",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@clerk/localizations": "^1.26.16",
-    "@clerk/nextjs": "^4.29.9",
+    "@clerk/nextjs": "^5.0.8",
     "@hookform/resolvers": "^3.3.4",
     "@libsql/client": "^0.6.0",
     "@logtail/pino": "^0.4.21",
@@ -61,9 +61,10 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.2.1",
-    "@commitlint/config-conventional": "^19.1.0",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@commitlint/cz-commitlint": "^19.2.0",
+    "@commitlint/types": "^19.0.3",
     "@faker-js/faker": "^8.4.1",
     "@next/bundle-analyzer": "^14.1.4",
     "@percy/cli": "1.28.2",
@@ -114,6 +115,7 @@
     "eslint-plugin-unused-imports": "^3.1.0",
     "http-server": "^14.1.1",
     "husky": "^9.0.11",
+    "inquirer": "^9.2.20",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-fail-on-console": "^3.1.2",
